@@ -32,6 +32,10 @@ const userSchema=new Schema({
     refreshTokens:{
         type:[String],
     },
+    pdfs:{
+        type:Schema.Types.ObjectId,
+        ref:"PDF"
+    }
     
 },
 {

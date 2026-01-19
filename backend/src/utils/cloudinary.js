@@ -15,10 +15,13 @@ import fs from 'fs';
                 resource_type:"auto",
             });
             //file has been uploaded
+            fs.unlinkSync(filePath); // Remove file from server after upload
             console.log(result.url);
             return result;
         } catch (error) {    
             fs.unlinkSync(filePath);
+            console.error("Cloudinary upload error:", error);
+            return null;
 
         }
     }

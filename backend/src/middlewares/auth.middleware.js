@@ -1,6 +1,6 @@
 import { User } from "../models/users.model.js";
 import { asyncHandler } from "../utils/asynchandler";
-import error from "../utils/error.js"
+import error from "../utils/error_structurer.js"
 export const verifyJWT=asyncHandler(async(req,res,next)=>{
     const token= req.cookies?.accessToken || req.headers("Authorization")?.replace("Bearer ","")
     if(!token)
