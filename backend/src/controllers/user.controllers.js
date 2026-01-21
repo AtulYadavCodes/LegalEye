@@ -10,7 +10,7 @@ const generateAccessTokenandRefreshToken=async(userId)=>{
         const accessToken=user.generateAccessToken();
         const refreshToken=user.generateRefreshToken();
      //   user.accessToken=accessToken;
-        user.refreshToken=refreshToken;
+        user.refreshTokens=refreshToken;
        await user.save({validateBeforeSave: false});
         return {accessToken,refreshToken};
     } catch (error) {
@@ -52,15 +52,15 @@ const registerUser=asyncHandler(async(req,res,next)=>{
 })
 
 const loginuser=asyncHandler(async(req,res,next)=>{
-    const {email,passowrd}=req.body;
-    if(email==""||passowrd=="")
+    const {email,password}=req.body;
+    if(email==""||password=="")
     {
         throw new error_structurer(400,"All fields are required");
     }
     const userchecker=await User.findOne({email:email});
     if(!userchecker)
         throw new error_structurer(400,"User does not exist");
-    const isvalidpassword=await userchecker.isValidPassword(passowrd);
+    const isvalidpassword=await userchecker.isValidPassword(password);
     if(!isvalidpassword)
         throw new error_structurer(400,"Invalid credentials");  
     const {accessToken,refreshToken}=await generateAccessTokenandRefreshToken(userchecker._id);
@@ -72,7 +72,7 @@ const loginuser=asyncHandler(async(req,res,next)=>{
       return res.cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json(new responseHandler(200,"User logged in successfully",{user:loggedinuser,accessToken,refreshToken}))
 })
 
-export const logoutuser=asyncHandler(async(req,res,next)=>{
+ const logoutuser=asyncHandler(async(req,res,next)=>{
     await User.findByIdAndUpdate(
         req.user._id,
         { $set: { refreshTokens: undefined } },
@@ -88,7 +88,7 @@ export const logoutuser=asyncHandler(async(req,res,next)=>{
     .clearCookie("refreshToken",options)
     .json(new responseHandler(200,"User logged out successfully",{}))
 })
-const refreshAccessToken=asyncHandler(async(req,res)=>{
+ const refreshAccessToken=asyncHandler(async(req,res)=>{
     const incomingRefreshToken=req.cookies.refreshToken;
     if(!incomingRefreshToken)
         throw new error_structurer(401,"Refresh token not found");
@@ -110,4 +110,4 @@ const refreshAccessToken=asyncHandler(async(req,res)=>{
     }
 })
 
-export {registerUser,loginuser}
+export {registerUser,loginuser,logoutuser,refreshAccessToken};
