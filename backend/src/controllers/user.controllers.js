@@ -127,4 +127,15 @@ const updateuserProfile=asyncHandler(async(req,res)=>{
 const returnuserProfile=asyncHandler(async(req,res)=>{
     return res.status(200).json(new responseHandler(200,"User profile fetched successfully",req.user));
 });
+
+const updateuserpassword=asyncHandler(async(req,res)=>{
+    const {oldpassword,newpassword}=req.body;
+    const user=await User.findById(req.user._id);
+    const isvalidpassword=await user.isValidPassword(oldpassword);
+    if(!isvalidpassword)
+        throw new error_structurer(400,"Old password is incorrect");
+    user.password=newpassword;
+    await user.save();
+    return res.status(200).json(new responseHandler(200,"Password updated successfully",{}));
+})
 export {registerUser,loginuser,logoutuser,refreshAccessToken};
