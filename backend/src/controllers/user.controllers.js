@@ -109,7 +109,7 @@ const loginuser=asyncHandler(async(req,res,next)=>{
     }
 })
 
-const updateuserProfile=asyncHandler(async(req,res)=>{
+const updateuseravatar=asyncHandler(async(req,res)=>{
     const avatarlocalpath=req.file?.path
     const avatar=await uploadoncloudinary(avatarlocalpath);
     if(!avatar.url)
@@ -138,4 +138,16 @@ const updateuserpassword=asyncHandler(async(req,res)=>{
     await user.save();
     return res.status(200).json(new responseHandler(200,"Password updated successfully",{}));
 })
+const updateuseremail=asyncHandler(async(req,res)=>{
+    const {newemail}=req.body;
+    const emailchecker=await User.findOne({email:newemail});
+    if(emailchecker)
+        throw new error_structurer(400,"Email already in use");
+    const updateduser=await User.findByIdAndUpdate(
+        req.user._id,
+        { $set: { email: newemail } },
+        { new: true }
+    ).select("-password -refreshtoken");
+    return res.status(200).json(new responseHandler(200,"Email updated successfully",updateduser));
+})  
 export {registerUser,loginuser,logoutuser,refreshAccessToken};
