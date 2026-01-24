@@ -1,6 +1,6 @@
 import mongoose,{Schema} from "mongoose";
 import { type } from "node:os";
-const CasingSchema=new Schema({
+const GroupingSchema=new Schema({
     name:{
         type:String,
         required:true,
@@ -19,4 +19,4 @@ const CasingSchema=new Schema({
 {
     timestamps:true
 });
-export const Casing=mongoose.model("Casing",CasingSchema);
+export const Group=mongoose.model("Group",GroupingSchema);

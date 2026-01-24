@@ -46,7 +46,7 @@ const registerUser=asyncHandler(async(req,res,next)=>{
     {
         throw new error_structurer(500,"User not created");        
     }
-    return res.json(
+    return res.status(200).json(
         new responseHandler(200,"User created successfully",createduser)
     )
 })
@@ -69,7 +69,7 @@ const loginuser=asyncHandler(async(req,res,next)=>{
         httpOnly:true,
         secure: true
       }
-      return res.cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json(new responseHandler(200,"User logged in successfully",{user:loggedinuser,accessToken,refreshToken}))
+      return res.status(200).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json(new responseHandler(200,"User logged in successfully",{user:loggedinuser,accessToken,refreshToken}))
 })
 
  const logoutuser=asyncHandler(async(req,res,next)=>{
@@ -83,8 +83,7 @@ const loginuser=asyncHandler(async(req,res,next)=>{
         httpOnly:true,
         secure: true,
     }
-    return res
-    .clearCookie("accessToken",options)
+    return res.status(200).clearCookie("accessToken",options)
     .clearCookie("refreshToken",options)
     .json(new responseHandler(200,"User logged out successfully",{}))
 })
@@ -104,7 +103,7 @@ const loginuser=asyncHandler(async(req,res,next)=>{
         httpOnly:true,
         secure: true
       }
-      return res.cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json(new responseHandler(200,"Access token refreshed successfully",{accessToken:accessToken}))
+      return res.status(200).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json(new responseHandler(200,"Access token refreshed successfully",{accessToken:accessToken}))
     } catch (error) {
         throw new error_structurer(401,error?.message||"Invalid refresh token");
     }
