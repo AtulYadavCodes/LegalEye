@@ -123,4 +123,8 @@ const updateuserProfile=asyncHandler(async(req,res)=>{
     ).select("-password -refreshtoken");
     return res.status(200).json(new responseHandler(200,"Profile updated successfully",updateduser));
 })
+
+const returnuserProfile=asyncHandler(async(req,res)=>{
+    return res.status(200).json(new responseHandler(200,"User profile fetched successfully",req.user));
+});
 export {registerUser,loginuser,logoutuser,refreshAccessToken};
