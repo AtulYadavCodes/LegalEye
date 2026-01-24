@@ -109,4 +109,18 @@ const loginuser=asyncHandler(async(req,res,next)=>{
     }
 })
 
+const updateuserProfile=asyncHandler(async(req,res)=>{
+    const avatarlocalpath=req.file?.path
+    const avatar=await uploadoncloudinary(avatarlocalpath);
+    if(!avatar.url)
+    {
+        throw new error_structurer(500,"error in uploading avatar");
+    }
+    const updateduser=await User.findByIdAndUpdate(
+        req.user._id,
+        { $set: { avatar: avatar.url } },
+        { new: true }
+    ).select("-password -refreshtoken");
+    return res.status(200).json(new responseHandler(200,"Profile updated successfully",updateduser));
+})
 export {registerUser,loginuser,logoutuser,refreshAccessToken};
