@@ -1,4 +1,4 @@
-# LegalEye Backend API
+# LegalEye Backend API ( in progress
 
 A secure and scalable backend API for LegalEye platform built with Node.js, Express, and MongoDB. This API provides complete user authentication, profile management, and file upload capabilities with industry-standard security practices.
 
