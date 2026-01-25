@@ -10,7 +10,11 @@ router.route('/register').post(
 router.route('/login').post(upload.none(), loginuser)
 
 
-//secured routes
+//secured routes all using upload.none() to parse multipart/form-data with no files considering frontend sends formdata for all requests
 router.route('/logout').post(verifyJWT,logoutuser);
 router.route('/refreshAccessToken').post(refreshAccessToken);
+router.route('/profile').get(verifyJWT,returnuserProfile);
+router.route('/updateprofileavatar').put(verifyJWT,upload.single('avatar'),updateuseravatar);
+router.route('/updatepassword').put(verifyJWT,upload.none(),updateuserpassword);
+router.route('/updateemail').put(verifyJWT,upload.none(),updateuseremail);
 export default router

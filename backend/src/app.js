@@ -1,7 +1,6 @@
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
-
 let app=express();
 app.use(cookieParser());
 app.use(cors({
@@ -9,6 +8,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use()
 app.use(express.static('public'));
 
 

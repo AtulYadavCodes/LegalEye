@@ -150,4 +150,4 @@ const updateuseremail=asyncHandler(async(req,res)=>{
     ).select("-password -refreshtoken");
     return res.status(200).json(new responseHandler(200,"Email updated successfully",updateduser));
 })  
-export {registerUser,loginuser,logoutuser,refreshAccessToken};
+export {registerUser,loginuser,logoutuser,refreshAccessToken,updateuseravatar,returnuserProfile,updateuserpassword,updateuseremail};
