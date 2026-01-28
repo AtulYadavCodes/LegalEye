@@ -14,7 +14,7 @@ router.route('/login').post(upload.none(), loginuser)
 router.route('/logout').post(verifyJWT,logoutuser);
 router.route('/refreshAccessToken').post(refreshAccessToken);
 router.route('/profile').get(verifyJWT,returnuserProfile);
-router.route('/updateprofileavatar').put(verifyJWT,upload.single('avatar'),updateuseravatar);
-router.route('/updatepassword').put(verifyJWT,upload.none(),updateuserpassword);
-router.route('/updateemail').put(verifyJWT,upload.none(),updateuseremail);
+router.route('/updateprofileavatar').patch(verifyJWT,upload.single('avatar'),updateuseravatar);
+router.route('/updatepassword').post(verifyJWT,upload.none(),updateuserpassword);
+router.route('/updateemail').patch(verifyJWT,upload.none(),updateuseremail);
 export default router
