@@ -25,3 +25,4 @@ const getalluserpdfs=asyncHandler(async (req, res) => {
     }
     res.status(200).json(new responseHandler(200,"User PDFs fetched successfully",userpdfs));
 })
+export {getalluserpdfs}
