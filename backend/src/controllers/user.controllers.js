@@ -3,7 +3,7 @@ import error_structurer from "../utils/error_structurer.js"
 import {User} from "../models/users.model.js";
 import uploadoncloudinary from "../utils/cloudinary.js";
 import { response } from "express";
-import responseHandler from "../utils/responsehandler.js"
+import responseHandler from "../utils/responseHandler.js"
 const generateAccessTokenandRefreshToken=async(userId)=>{
     try {
         const user=await User.findById(userId);

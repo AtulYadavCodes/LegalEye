@@ -32,7 +32,7 @@ const userSchema=new Schema({
     refreshTokens:{
         type:[String],
     },
-    pdfs:{
+    pdfs:{//not imp not using
         type:Schema.Types.ObjectId,
         ref:"PDF"
     }
