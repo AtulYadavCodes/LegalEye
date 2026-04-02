@@ -8,10 +8,10 @@ import fs from 'fs';
         api_secret: process.env.cloudinary_api_secret // Click 'View API Keys' above to copy your API secret
     });
     
-    const uploadoncloudinary=async(filePath)=>{
+    const uploadoncloudinary=async(filePath,option)=>{
         try {
             if(!filePath)return;
-            const result= await cloudinary.uploader.upload(filePath,{
+            const result= await cloudinary.uploader.upload(filePath,{ ...option,
                 resource_type:"auto",
             });
             //file has been uploaded

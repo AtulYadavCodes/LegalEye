@@ -18,24 +18,24 @@ const generateAccessTokenandRefreshToken=async(userId)=>{
     }
 }
 const registerUser=asyncHandler(async(req,res,next)=>{
-    const {name,username,email,password}=req.body;
-    console.log(name,email,password);
-    if(name==""||email==""||password=="")
+    const {fullname,username,email,password}=req.body;
+    console.log(fullname,email,password);
+    if(fullname==""||email==""||password=="")
     {
         throw new error_structurer(400,"All is required");
     }
     const userchecker=await User.findOne({email:email})
     if(userchecker)
         throw new error_structurer(400,"User already exists");
-   const avatarlocalpath= req.files?.avatar[0]?.path
+   const avatarlocalpath= req.file?.path
    if(!avatarlocalpath)
      throw new error_structurer(400,"Avatar is required");
-    const cloudinaryresponse=await uploadoncloudinary(avatarlocalpath);
+    const cloudinaryresponse=await uploadoncloudinary(avatarlocalpath,{ folder:"avatars"});
 
     if(!cloudinaryresponse)
         throw new error_structurer(500,"Image not uploaded");
    const user=await User.create({
-        name,
+        fullname,
         username,
         email,
         password,
@@ -92,11 +92,20 @@ const loginuser=asyncHandler(async(req,res,next)=>{
     if(!incomingRefreshToken)
         throw new error_structurer(401,"Refresh token not found");
     try {
-        const decoded=jwt.verify(incomingRefreshToken,process.env.REFRESH_TOKEN_SECRET);
-    const user=await User.findById(decoded?._id);
+
+
+        // Refresh-token validation has two layers:
+// 1) jwt.verify(incomingRefreshToken, JWT_REFRESH_SECRET) checks signature and expiry.
+//    If token is expired/tampered, verify throws and we reject immediately.
+// 2) We then load the user from decoded.userId to identify token owner.
+// 3) Even after verify succeeds, we MUST compare with the token stored in DB.
+//    This enforces rotation/revocation: old-but-signed tokens are rejected after
+//    logout, re-login, or token rotation because they no longer match user.refreshTokens.
+        const decoded=jwt.verify(incomingRefreshToken,process.env.JWT_REFRESH_SECRET);
+    const user=await User.findById(decoded?.userId);
     if(!user)
         throw new error_structurer(401,"User not found");
-    if(!user.refreshTokens==(incomingRefreshToken))
+    if(!(user.refreshTokens==(incomingRefreshToken)))
         throw new error_structurer(401,"Invalid refresh token");
     const {accessToken,refreshToken}=await user.generateAccessToken(user._id);
     const options={
