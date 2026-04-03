@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
+import error_structurer from './error_structurer.js';
 
 // Configuration
     cloudinary.config({ 
@@ -19,9 +20,11 @@ import fs from 'fs';
             console.log(result.url);
             return result;
         } catch (error) {    
+            if(filePath&&fs.existsSync(filePath)){
             fs.unlinkSync(filePath);
+            }
             console.error("Cloudinary upload error:", error);
-            return null;
+            throw new error_structurer(error?.statusCode || 500,error?.message || "Cloudinary upload failed",[error])
 
         }
     }
