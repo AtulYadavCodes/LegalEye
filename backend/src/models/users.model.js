@@ -38,12 +38,7 @@ const userSchema=new Schema({
     },
     refreshTokens:{
         type:[String],
-    },
-    pdfs:{//not imp not using
-        type:Schema.Types.ObjectId,
-        ref:"PDF"
     }
-    
 },
 {
     timestamps:true

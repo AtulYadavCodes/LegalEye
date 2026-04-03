@@ -12,8 +12,9 @@ app.use(express.static('public'));
 
 
 //routes
-import router from './routes/user.routes.js'
-app.use('/api/v1/users',router)
+import Userrouter from './routes/user.routes.js'
+app.use('/api/v1/users',Userrouter)
+app.use('/api/v1/pdfs',pdfrouter)
 
 const errormiddleware=(err,req,res,next)=>{
     const statusCode=err.statusCode||500;

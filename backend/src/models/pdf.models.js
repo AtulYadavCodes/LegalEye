@@ -31,3 +31,5 @@ const pdfschema=new Schema({
 })
 pdfschema.plugin(mongooseAggregatePaginate);
 export const PDF=mongoose.model("PDF",pdfschema);
+ //variable is outer pdf and inner is model name and schema name respectively
+ //mongoose auto creates collection name as plural of model name and in small letters i.e. pdfs

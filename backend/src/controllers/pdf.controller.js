@@ -3,6 +3,7 @@ import { responseHandler } from "../utils/responseHandler.js";
 import asyncHandler from "../utils/asynchandler.js";
 import { error_structurer } from "../utils/errorStructurer.js";
 import { PDF } from "../models/pdf.models.js";
+import { uploadoncloudinary } from "../utils/cloudinary.js";
 const getalluserpdfs=asyncHandler(async (req, res) => {
     const { page=1,limit=10,sortby="createdAt", sorttype="desc" }=req.query;
     const userpdfs=await PDF.aggregate([
