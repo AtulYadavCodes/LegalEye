@@ -13,6 +13,7 @@ app.use(express.static('public'));
 
 //routes
 import Userrouter from './routes/user.routes.js'
+import pdfrouter from './routes/pdf.routes.js'
 app.use('/api/v1/users',Userrouter)
 app.use('/api/v1/pdfs',pdfrouter)
 
