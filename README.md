@@ -1,421 +1,175 @@
-# LegalEye Backend API (In Progress)
-
-A secure and scalable backend API for LegalEye platform built with Node.js, Express, and MongoDB. This API provides complete user authentication, profile management, and file upload capabilities with industry-standard security practices.
-
----
-
-## 🚀 Features
-
-### User Authentication
-
-- **User Registration** with avatar upload
-- **Secure Login/Logout** with JWT-based authentication
-- **Access Token & Refresh Token** mechanism for session management
-- **Token Refresh** endpoint for seamless user experience
-
-### User Profile Management
-
-- **View User Profile** (authenticated)
-- **Update Profile Avatar** with Cloudinary integration
-- **Change Password** with old password verification
-- **Update Email** with uniqueness validation
-
-### File Upload
-
-- **Avatar Upload** using Multer and Cloudinary
-- **Automatic file cleanup** after upload
-- **Multipart form data** parsing for file and text fields
-
----
-
-## 🔒 Security Features
+# LegalEye Backend
 
-### Authentication & Authorization
-
-- **JWT (JSON Web Tokens)** for stateless authentication
-- **Dual Token System**:
-  - Short-lived access tokens
-  - Long-lived refresh tokens for token renewal
-- **HTTP-only Cookies** to prevent XSS attacks
-- **Secure Cookie Flag** for HTTPS-only transmission
-- **Bearer Token Support** via Authorization header
-
-### Password Security
-
-- **Bcrypt Hashing** with salt rounds (10) for password encryption
-- **Password Validation** before updates
-- **Password field exclusion** from API responses using `.select("-password")`
-
-### Input Validation & Error Handling
-
-- **Required field validation** for all endpoints
-- **Email uniqueness** checks to prevent duplicates
-- **Centralized error handling** middleware
-- **Structured error responses** with status codes and messages
-
-### CORS Configuration
+Express + MongoDB backend for LegalEye. It currently provides user auth, profile management, folder management, and sheet upload.
 
-- **Cross-Origin Resource Sharing** configured for allowed origins
-- Environment-based CORS origin control
-
-### Middleware Security
-
-- **Cookie Parser** for secure cookie handling
-- **JWT Verification Middleware** for protected routes
-- **Multer** for safe file upload handling
-
----
+## Tech Stack
 
-## 📂 Project Structure
-
-```
-backend/
-├── src/
-│   ├── app.js                    # Express app configuration
-│   ├── index.js                  # Server entry point
-│   ├── constants.js              # Application constants
-│   │
-│   ├── controllers/              # Business logic layer
-│   │   └── user.controllers.js   # User operations (register, login, profile, etc.)
-│   │
-│   ├── models/                   # Database schemas
-│   │   ├── users.model.js        # User schema with bcrypt & JWT methods
-│   │   ├── pdf.models.js         # PDF document schema
-│   │   └── Grouping.model.js     # Grouping/categorization schema
-│   │
-│   ├── routes/                   # API endpoints
-│   │   └── user.routes.js        # User-related routes
-│   │
-│   ├── middlewares/              # Custom middleware
-│   │   ├── auth.middleware.js    # JWT verification middleware
-│   │   └── multer.middleware.js  # File upload middleware
-│   │
-│   ├── utils/                    # Utility functions
-│   │   ├── asynchandler.js       # Async error wrapper
-│   │   ├── cloudinary.js         # Cloudinary upload helper
-│   │   ├── error_structurer.js   # Custom error class
-│   │   └── responseHandler.js    # Standardized API response
-│   │
-│   └── db/                       # Database configuration
-│       └── index.js              # MongoDB connection
-│
-├── public/                       # Static files
-│   └── temp/                     # Temporary file storage for uploads
-│
-└── package.json                  # Project dependencies
-```
+- Node.js (ESM)
+- Express 5
+- MongoDB + Mongoose
+- JWT (access + refresh)
+- Redis (login attempt throttling)
+- Multer (multipart handling)
+- Cloudinary (file storage)
+- Cookie Parser + CORS
 
----
+## Current Features
 
-## 🏗️ Code Architecture & Patterns
+- User registration with avatar upload
+- Login with access/refresh token issuance
+- Logout with cookie clear and refresh token unset
+- Refresh access token endpoint
+- Get authenticated user profile
+- Update avatar
+- Update password
+- Update email
+- Create folder
+- List all folders for logged-in user
+- Delete folder
+- List all sheets in a folder
+- Upload sheet file to a folder
 
-### 1. **MVC Pattern (Model-View-Controller)**
+## API Base
 
-- **Models**: Mongoose schemas with business logic methods
-- **Controllers**: Handle request/response logic
-- **Routes**: Define API endpoints and middleware chains
+- Base URL: http://localhost:3000
+- Global prefix: /api/v1
 
-### 2. **Middleware Chain Pattern**
+Mounted route groups:
 
-```javascript
-router
-  .route("/updateprofileavatar")
-  .put(verifyJWT, upload.single("avatar"), updateuseravatar);
-```
+- /api/v1/users
+- /api/v1/folders
+- /api/v1/sheets
 
-- `verifyJWT`: Authentication check
-- `upload.single('avatar')`: File upload handling
-- `updateuseravatar`: Controller logic
+## Authentication
 
-### 3. **Async Error Handling Wrapper**
+Protected endpoints require either:
 
-```javascript
-export const asyncHandler = (fn) => async (req, res, next) => {
-  try {
-    await fn(req, res, next);
-  } catch (error) {
-    next(error); // Pass to error middleware
-  }
-};
-```
+- accessToken cookie, or
+- Authorization header with Bearer token
 
-- Eliminates repetitive try-catch blocks
-- Centralizes error handling
+Token details:
 
-### 4. **Custom Error Structure**
+- Access token signed with JWT_SECRET
+- Refresh token signed with JWT_REFRESH_SECRET
+- Refresh token is also checked against stored value in DB before issuing new access token
 
-```javascript
-throw new error_structurer(400, "User already exists");
-```
+## Standard Response and Error Shape
 
-- Consistent error format across the application
-- Status code and message bundled together
+Success responses use a common wrapper from responseHandler:
 
-### 5. **Standardized API Response**
+- statusCode
+- message
+- data
 
-```javascript
-return res
-  .status(200)
-  .json(new responseHandler(200, "User created successfully", createduser));
-```
+Error middleware returns:
 
-- Uniform response structure for all endpoints
-- Easy to consume on frontend
+- statusCode
+- message
+- errors (array)
 
-### 6. **Schema Methods Pattern**
+## API Endpoints
 
-```javascript
-userSchema.methods.isValidPassword = async function (password) {
-  return await bcrypt.compare(password, this.password);
-};
-```
+### Users
 
-- Business logic encapsulated in model
-- Reusable across controllers
+| Method | Route                             | Secured | Body/Params                                                  | Notes                         |
+| ------ | --------------------------------- | ------- | ------------------------------------------------------------ | ----------------------------- |
+| POST   | /api/v1/users/register            | No      | multipart: fullname, username, email, password, avatar(file) | Create new user               |
+| POST   | /api/v1/users/login               | No      | email, password                                              | Redis rate-limit by email+ip  |
+| POST   | /api/v1/users/logout              | Yes     | none                                                         | Clears auth cookies           |
+| POST   | /api/v1/users/refreshAccessToken  | No\*    | refreshToken cookie                                          | Requires valid refresh cookie |
+| GET    | /api/v1/users/profile             | Yes     | none                                                         | Returns current user          |
+| PATCH  | /api/v1/users/updateprofileavatar | Yes     | multipart: avatar(file)                                      | Updates avatar via Cloudinary |
+| POST   | /api/v1/users/updatepassword      | Yes     | oldpassword, newpassword                                     | Changes password              |
+| PATCH  | /api/v1/users/updateemail         | Yes     | newemail                                                     | Updates email if unique       |
 
-### 7. **Pre-save Hooks**
+### Folders
 
-```javascript
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
-});
-```
+| Method | Route                                          | Secured | Body/Params    | Notes                                |
+| ------ | ---------------------------------------------- | ------- | -------------- | ------------------------------------ |
+| POST   | /api/v1/folders/createfolder                   | Yes     | foldername     | Create folder for logged-in user     |
+| GET    | /api/v1/folders/getalluserfolders              | Yes     | none           | List folders of current user         |
+| DELETE | /api/v1/folders/deletefolder/:folderid         | Yes     | folderid param | Deletes folder and associated sheets |
+| GET    | /api/v1/folders/getallsheetsinfolder/:folderid | Yes     | folderid param | List sheets in folder                |
 
-- Automatic password hashing before saving
-- Prevents storing plain text passwords
+### Sheets
 
----
+| Method | Route                                | Secured | Body/Params                     | Notes                             |
+| ------ | ------------------------------------ | ------- | ------------------------------- | --------------------------------- |
+| POST   | /api/v1/sheets/uploadsheet/:folderid | Yes     | folderid param + multipart file | Uploads sheet and stores metadata |
 
-## 📡 API Endpoints
+Secured = requires valid access token (cookie or Bearer token).
+No\* = endpoint itself is public but needs a valid refresh token cookie.
 
-### Public Routes
+## Environment Variables
 
-| Method | Endpoint                           | Description          | Body                                             |
-| ------ | ---------------------------------- | -------------------- | ------------------------------------------------ |
-| POST   | `/api/v1/users/register`           | Register new user    | `name, username, email, password, avatar (file)` |
-| POST   | `/api/v1/users/login`              | User login           | `email, password`                                |
-| POST   | `/api/v1/users/refreshAccessToken` | Refresh access token | `refreshToken (cookie)`                          |
+Use backend/.env.example as template.
 
-### Protected Routes (Require JWT)
+Required keys in backend/.env:
 
-| Method | Endpoint                            | Description      | Body                       |
-| ------ | ----------------------------------- | ---------------- | -------------------------- |
-| POST   | `/api/v1/users/logout`              | Logout user      | -                          |
-| GET    | `/api/v1/users/profile`             | Get user profile | -                          |
-| PUT    | `/api/v1/users/updateprofileavatar` | Update avatar    | `avatar (file)`            |
-| PUT    | `/api/v1/users/updatepassword`      | Change password  | `oldpassword, newpassword` |
-| PUT    | `/api/v1/users/updateemail`         | Update email     | `newemail`                 |
+- PORT
+- CORS_ORIGIN
+- MONGODB_URI
+- JWT_SECRET
+- JWT_EXPIRES_IN
+- JWT_REFRESH_SECRET
+- JWT_REFRESH_EXPIRES_IN
+- REDIS_HOST
+- REDIS_PORT
+- REDIS_PASSWORD
+- cloudinary_name
+- cloudinary_api_key
+- cloudinary_api_secret
+- RAZORPAY_KEY_ID
+- RAZORPAY_KEY_SECRET
+- RAZORPAY_WEBHOOK_SECRET
 
----
+## Run Locally
 
-## 🛠️ Technologies Used
+1. Install dependencies
 
-- **Node.js** - Runtime environment
-- **Express.js** - Web framework
-- **MongoDB** - NoSQL database
-- **Mongoose** - ODM for MongoDB
-- **JWT** - Authentication tokens
-- **Bcrypt** - Password hashing
-- **Multer** - File upload handling
-- **Cloudinary** - Cloud storage for images
-- **Cookie-parser** - Cookie handling
-- **CORS** - Cross-origin requests
-- **Dotenv** - Environment variable management
-
----
+- From backend folder: npm install
 
-## 🚦 Getting Started
+2. Start Redis
 
-### Prerequisites
+- Option A: local Redis instance
+- Option B: docker compose in backend folder:
+  - docker compose up -d
 
-- Node.js (v14+)
-- MongoDB
-- Cloudinary account
+3. Start API
 
-### Installation
+- From backend folder: npm start
 
-1. Clone the repository
+Server runs on configured PORT (current code defaults effectively to 3000 in index startup line).
 
-```bash
-git clone <repository-url>
-cd LegalEye/backend
-```
+## Security Implemented
 
-2. Install dependencies
+- Password hashing with bcrypt in model pre-save hook
+- JWT-based auth for protected routes
+- HttpOnly secure cookies for tokens
+- Token verification middleware for protected routes
+- Refresh token re-validation against stored DB token
+- Login brute-force mitigation via Redis attempt counter
+- Centralized error middleware
+- CORS origin configuration via environment variable
+- Sensitive config in environment variables
 
-```bash
-npm install
-```
+## Important Notes and Current Gaps
 
-3. Create `.env` file in the backend root
+These are useful to know while integrating frontend or deploying:
 
-```env
-PORT=8000
-MONGODB_URI=your_mongodb_connection_string
-CORS_ORIGIN=http://localhost:3000
+- CORS is configured with origin only; credentials setting is not explicitly enabled.
+- Cookie secure flag is always true, so local HTTP testing may need HTTPS/proxy adjustments.
+- Multer currently has no file size/type validation configured.
+- Some controller logic and naming are inconsistent (for example refresh token storage and generation flow), so additional hardening/refactor is recommended before production use.
+- No automated tests are included yet.
 
-JWT_SECRET=your_access_token_secret
-JWT_EXPIRES_IN=1d
-JWT_REFRESH_SECRET=your_refresh_token_secret
-JWT_REFRESH_EXPIRES_IN=7d
+## Folder Structure
 
-cloudinary_name=your_cloudinary_name
-cloudinary_api_key=your_cloudinary_api_key
-cloudinary_api_secret=your_cloudinary_api_secret
-```
-
-4. Start the server
-
-```bash
-# Development
-npm run dev
-
-# Production
-npm start
-```
-
----
-
-## 📝 Code Style & Best Practices
-
-### ✅ Implemented Best Practices
-
-- **Environment Variables** for sensitive data
-- **Centralized Error Handling** middleware
-- **Async/Await** with proper error catching
-- **Password Hashing** before storage
-- **JWT Token Expiry** management
-- **File Cleanup** after uploads
-- **Input Validation** on all endpoints
-- **Modular Code Structure** for maintainability
-- **Cookie Security** (httpOnly, secure flags)
-- **Database Indexing** on frequently queried fields
-
-### 📋 Code Conventions
-
-- ES6+ syntax with **imports/exports**
-- **Async/await** over callbacks
-- **Arrow functions** for cleaner syntax
-- **Descriptive variable names**
-- **Single responsibility** for functions
-- **Error-first** approach
-
----
-
-## 🔄 Token Flow
-
-```
-1. User Login
-   ↓
-2. Generate Access Token (short-lived) + Refresh Token (long-lived)
-   ↓
-3. Store Refresh Token in DB + Both tokens in HTTP-only cookies
-   ↓
-4. Access Token expires
-   ↓
-5. Client calls /refreshAccessToken with Refresh Token
-   ↓
-6. Verify Refresh Token from DB
-   ↓
-7. Issue new Access Token
-   ↓
-8. Continue authenticated requests
-```
-
----
-
-## 🧪 Testing Endpoints
-
-### Using cURL
-
-**Register User**
-
-```bash
-curl -X POST http://localhost:8000/api/v1/users/register \
-  -F "name=John Doe" \
-  -F "username=johndoe" \
-  -F "email=john@example.com" \
-  -F "password=secret123" \
-  -F "avatar=@/path/to/image.jpg"
-```
-
-**Login**
-
-```bash
-curl -X POST http://localhost:8000/api/v1/users/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"john@example.com","password":"secret123"}'
-```
-
-**Get Profile** (with token)
-
-```bash
-curl -X GET http://localhost:8000/api/v1/users/profile \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
-```
-
----
-
-## 🐛 Error Response Format
-
-```json
-{
-  "statusCode": 400,
-  "message": "User already exists",
-  "errors": []
-}
-```
-
-## ✅ Success Response Format
-
-```json
-{
-  "statusCode": 200,
-  "message": "User created successfully",
-  "data": {
-    "_id": "...",
-    "username": "johndoe",
-    "email": "john@example.com",
-    "avatar": "https://...",
-    "createdAt": "2026-01-25T10:30:00.000Z"
-  }
-}
-```
-
----
-
-## 📌 Future Enhancements
-
-- [ ] Email verification on registration
-- [ ] Password reset via email
-- [ ] Two-factor authentication (2FA)
-- [ ] Rate limiting for API endpoints
-- [ ] Request validation with Joi/Zod
-- [ ] API documentation with Swagger
-- [ ] Unit and integration tests
-- [ ] Logging with Winston/Morgan
-- [ ] Redis for session management
-
----
-
-## 📄 License
-
-ISC
-
----
-
-## 👨‍💻 Author
-
-Developed with ❤️ for LegalEye Platform
-
----
-
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome!
-
----
-
-**Note**: Make sure to never commit `.env` file or expose sensitive credentials.
+- backend/src/app.js: app setup, middleware, route mounting
+- backend/src/index.js: entry point and DB connect
+- backend/src/routes: route definitions
+- backend/src/controllers: request handlers
+- backend/src/models: mongoose schemas
+- backend/src/middlewares: auth, multer, login rate-limit
+- backend/src/db: Mongo and Redis config
+- backend/src/utils: async wrapper, upload helper, response/error helpers
