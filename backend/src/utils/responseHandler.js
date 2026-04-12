@@ -9,6 +9,3 @@ class responseHandler
     }
 }
 export default responseHandler;
-
-//being use to send response in a standard forma k-t like ek response object banake jisme statuscode,message and data hoga
-//taki har jag same format me response bheja ja sake
