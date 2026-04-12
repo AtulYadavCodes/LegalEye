@@ -1,6 +1,8 @@
 # LegalEye Backend
 
-Express + MongoDB backend for LegalEye. It currently provides user auth, profile management, folder management, and sheet upload.
+Complete Express + MongoDB backend for LegalEye with user authentication flows (register, login, logout, token refresh), profile management, secure file upload, and fully documented route-based APIs for users, folders, and sheets.
+
+> Note: LegalEye is an ongoing project and features/routes may continue to evolve.
 
 ## Tech Stack
 
