@@ -38,24 +38,26 @@ const userSchema=new Schema({
     },
     refreshTokens:{
         type:[String],
+    },
+    folders:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Folder"
+    }],
+    usertype:{
+        type:String,
+        enum:["free","premium"],
+        default:"free"
     }
 },
 {
     timestamps:true
 })
 
-
 userSchema.pre("save",async function(){
     if(this.isModified("password")===false) return ;
     this.password=await bcrypt.hash(this.password,10);
     
 })
-
-// userSchema.pre("save",async function(next){
-//     if(this.isModified("password")===false) return next();
-//     this.password=await bcrypt.hash(this.password,10);
-//     next();
-// })//next is not req here as functio is async either use next and promise based fucntion or async function without next
 userSchema.methods.isValidPassword=async function(password){
     return await bcrypt.compare(password,this.password);
 }
