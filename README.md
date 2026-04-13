@@ -1,8 +1,8 @@
-# LegalEye Backend
+# Cloud Storage Backend
 
-Complete Express + MongoDB backend for LegalEye with user authentication flows (register, login, logout, token refresh), profile management, secure file upload, and fully documented route-based APIs for users, folders, and files.
+Complete Express + MongoDB backend for cloud storage with user authentication flows (register, login, logout, token refresh), profile management, secure file upload, and fully documented route-based APIs for users, folders, and files.
 
-> Note: LegalEye is an ongoing project and features/routes may continue to evolve.
+> Note: This cloud storage project is ongoing and features/routes may continue to evolve.
 
 ## Tech Stack
 
